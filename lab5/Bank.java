@@ -1,70 +1,74 @@
 import java.util.Scanner;
 
 class Account {
-    String name;
-    int accNo;
-    String accType;
+    String customerName;
+    int accountNumber;
+    String accountType;
     double balance;
 
-    Account(String name, int accNo, String accType, double balance) {
-        this.name = name;
-        this.accNo = accNo;
-        this.accType = accType;
-        this.balance = balance;
-    }
-
-    void deposit(double amt) {
-        balance += amt;
-        System.out.println("Amount deposited successfully");
-    }
-
-    void displayBalance() {
+    void display() {
+        System.out.println("Customer Name: " + customerName);
+        System.out.println("Account Number: " + accountNumber);
+        System.out.println("Account Type: " + accountType);
         System.out.println("Balance: " + balance);
     }
 }
 
-class SavAcct extends Account {
-    double rate = 0.05;
+class Sav_acct extends Account {
 
-    SavAcct(String name, int accNo, double balance) {
-        super(name, accNo, "Savings", balance);
+    void deposit(Scanner sc) {
+        System.out.print("Enter deposit amount: ");
+        double amount = sc.nextDouble();
+        balance += amount;
     }
 
-    void computeInterest() {
-        double interest = balance * rate;
+    void withdraw(Scanner sc) {
+        System.out.print("Enter withdrawal amount: ");
+        double amount = sc.nextDouble();
+        if (amount > balance) {
+            System.out.println("Insufficient balance");
+        } else {
+            balance -= amount;
+        }
+    }
+
+    void computeInterest(Scanner sc) {
+        System.out.print("Enter rate of interest: ");
+        double rate = sc.nextDouble();
+        System.out.print("Enter time period (years): ");
+        int time = sc.nextInt();
+
+        double interest = balance * Math.pow((1 + rate / 100), time) - balance;
         balance += interest;
         System.out.println("Interest added: " + interest);
     }
-
-    void withdraw(double amt) {
-        if (amt <= balance) {
-            balance -= amt;
-            System.out.println("Withdrawal successful");
-        } else {
-            System.out.println("Insufficient balance");
-        }
-    }
 }
 
-class CurAcct extends Account {
-    double minBalance = 1000;
-    double serviceCharge = 100;
+class Cur_acct extends Account {
+    final double minBalance = 500;
+    final double serviceCharge = 100;
 
-    CurAcct(String name, int accNo, double balance) {
-        super(name, accNo, "Current", balance);
+    void deposit(Scanner sc) {
+        System.out.print("Enter deposit amount: ");
+        double amount = sc.nextDouble();
+        balance += amount;
     }
 
-    void withdraw(double amt) {
-        if (amt <= balance) {
-            balance -= amt;
-            if (balance < minBalance) {
-                balance -= serviceCharge;
-                System.out.println("Minimum balance not maintained");
-                System.out.println("Service charge imposed: " + serviceCharge);
-            }
-            System.out.println("Withdrawal successful");
-        } else {
+    void withdraw(Scanner sc) {
+        System.out.print("Enter withdrawal amount: ");
+        double amount = sc.nextDouble();
+        if (amount > balance) {
             System.out.println("Insufficient balance");
+        } else {
+            balance -= amount;
+            checkMinBalance();
+        }
+    }
+
+    void checkMinBalance() {
+        if (balance < minBalance) {
+            balance -= serviceCharge;
+            System.out.println("Balance below minimum. Service charge imposed: " + serviceCharge);
         }
     }
 }
@@ -73,31 +77,74 @@ public class Bank {
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
 
-        System.out.println("Enter customer name:");
-        String name = sc.nextLine();
+        Sav_acct sav = new Sav_acct();
+        Cur_acct cur = new Cur_acct();
 
-        System.out.println("Enter account number:");
-        int accNo = sc.nextInt();
+        System.out.println("Enter Savings Account Details");
+        System.out.print("Customer Name: ");
+        sav.customerName = sc.next();
+        System.out.print("Account Number: ");
+        sav.accountNumber = sc.nextInt();
+        sav.accountType = "Savings";
+        sav.balance = 0;
 
-        System.out.println("Enter initial balance:");
-        double balance = sc.nextDouble();
+        System.out.println("\nEnter Current Account Details");
+        System.out.print("Customer Name: ");
+        cur.customerName = sc.next();
+        System.out.print("Account Number: ");
+        cur.accountNumber = sc.nextInt();
+        cur.accountType = "Current";
+        cur.balance = 0;
 
-        System.out.println("Select account type:");
-        System.out.println("1. Savings Account");
-        System.out.println("2. Current Account");
-        int choice = sc.nextInt();
+        int choice;
+        do {
+            System.out.println("\n1. Deposit");
+            System.out.println("2. Withdraw");
+            System.out.println("3. Compute Interest (Savings)");
+            System.out.println("4. Display Account Details");
+            System.out.println("5. Exit");
+            System.out.print("Enter choice: ");
+            choice = sc.nextInt();
 
-        if (choice == 1) {
-            SavAcct s = new SavAcct(name, accNo, balance);
-            s.deposit(2000);
-            s.computeInterest();
-            s.withdraw(1500);
-            s.displayBalance();
-        } else {
-            CurAcct c = new CurAcct(name, accNo, balance);
-            c.deposit(3000);
-            c.withdraw(4500);
-            c.displayBalance();
-        }
+            switch (choice) {
+                case 1:
+                    System.out.print("Enter account type (savings/current): ");
+                    String type = sc.next();
+                    if (type.equalsIgnoreCase("savings"))
+                        sav.deposit(sc);
+                    else
+                        cur.deposit(sc);
+                    break;
+
+                case 2:
+                    System.out.print("Enter account type (savings/current): ");
+                    type = sc.next();
+                    if (type.equalsIgnoreCase("savings"))
+                        sav.withdraw(sc);
+                    else
+                        cur.withdraw(sc);
+                    break;
+
+                case 3:
+                    sav.computeInterest(sc);
+                    break;
+
+                case 4:
+                    System.out.print("Enter account type (savings/current): ");
+                    type = sc.next();
+                    if (type.equalsIgnoreCase("savings"))
+                        sav.display();
+                    else
+                        cur.display();
+                    break;
+
+                case 5:
+                    System.out.println("Thank you");
+                    break;
+
+                default:
+                    System.out.println("Invalid choice");
+            }
+        } while (choice != 5);
     }
 }
